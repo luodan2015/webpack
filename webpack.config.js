@@ -3,6 +3,8 @@
 
 const path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
   // 上下文 项目打包的相对路径 默认是当前项目的根目录 必须是绝对路径
@@ -31,10 +33,35 @@ module.exports = {
     // chunkhash 用于多出口文件
     // filename: '[name]-[chunkhash:6].js',
   },
-  // 构建模式 none production development
+  // 构建模式 none production(生产环境 - 不建议开启source-map) development(开发环境 - 默认开启source-map)
   mode: 'development',
+  // eval: 速度最快，使用eval包裹模块代码
+  // source-map: 产生.map文件
+  // cheap: 较快，不包含列信息
+  // module：第三方模块，包含loader的sourcmap（比如：jsx to js，babel的sourcemap）
+  // inline: 将.map文件作为DataURI嵌入，不单独生成.map文件
+  devtool: 'eval-cheap-module-source-map',
+  devServer: {
+    // 服务器目录 - 绝对路径和相对路径都可以，绝对路径更快
+    contentBase: path.resolve(__dirname, './dist'),
+    // 是否自动打开默认浏览器窗口
+    open: true,
+    // 端口号
+    port: 8080,
+  },
   // 插件
-  plugins: [new CleanWebpackPlugin()],
+  plugins: [
+    new CleanWebpackPlugin(),
+    new MiniCssExtractPlugin({
+      filename: '[name]-[chunkhash:8].css'
+    }),
+    new HtmlWebpackPlugin({
+      title: 'webpack-test',
+      // 选择html模板
+      template: './src/index.html',
+      filename: 'index.html',
+    }),
+  ],
   // 处理不认识的模块
   module: {
     rules: [
@@ -46,6 +73,50 @@ module.exports = {
         // css in js方式
         // style-loader 从js中提取css的loader在，在html中创建style标签，把css的内容放到这个style标签里
         use: ['style-loader', 'css-loader'],
+      },
+      {
+        test: /\.less$/,
+        // less 语法编译
+        // less-loader 将less文件编译为css文件
+        // use: ['style-loader', 'css-loader', 'less-loader'],
+        use: [
+          // 'style-loader',
+          MiniCssExtractPlugin.loader,
+          {
+            loader: 'css-loader',
+            options: {
+              // css modules 开启
+              modules: true,
+            },
+          },
+          {
+            loader: 'postcss-loader',
+          },
+          'less-loader',
+        ],
+      },
+      // {
+      //   test: /\.(png|jpe?g|gif)$/,
+      //   use: {
+      //     loader: 'file-loader',
+      //     options: {
+      //       name: '[name]_[hash:6].[ext]',
+      //       outputPath: 'images/',
+      //     },
+      //   },
+      // },
+      {
+        test: /\.(png|jpe?g|gif)$/,
+        use: {
+          loader: 'url-loader',
+          options: {
+            name: '[name]_[hash:6].[ext]',
+            outputPath: 'images/',
+            // 推荐使用url-loader，因为url-loader支持limit
+            // 推荐小体积的图片资源转成base64，因为大体积的图片资源转成base64以后，字符串太长了，增加js文件的体积
+            limit: 60 * 1024, // 单位是字节，1024 = 1kb
+          },
+        },
       },
     ],
   },
