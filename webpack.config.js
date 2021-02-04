@@ -4,7 +4,9 @@
 const path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+// ! 开发环境不推荐使用 MiniCssExtractPlugin，因为对HMR功能支持不好
+// const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const webpack = require('webpack');
 
 module.exports = {
   // 上下文 项目打包的相对路径 默认是当前项目的根目录 必须是绝对路径
@@ -46,21 +48,43 @@ module.exports = {
     contentBase: path.resolve(__dirname, './dist'),
     // 是否自动打开默认浏览器窗口
     open: true,
+    // 开启热模块更新
+    // ! 注意启动HMR后，css抽离会不生效，还有不支持contenthash，chunkhash
+    hot: true,
+    // 即便HMR没有生效，浏览器也不要自动刷新
+    hotOnly: true,
+    // 代理
+    proxy: {
+      '/api': {
+        target: 'http://localhost:9092/',
+      },
+    },
+    // mock server
+    // webpack-dev-server提供的两个hooks（钩子），一个在中间件启动之前（before）一个在中间件启动之后（after）
+    before(app, server) {
+      app.get('/api/mock', (req, res) => {
+        res.json({
+          hello: 'express',
+        });
+      });
+    },
     // 端口号
     port: 8080,
   },
   // 插件
   plugins: [
     new CleanWebpackPlugin(),
-    new MiniCssExtractPlugin({
-      filename: '[name]-[chunkhash:8].css'
-    }),
+    // ! 开发环境不推荐使用 MiniCssExtractPlugin，因为对HMR功能支持不好
+    // new MiniCssExtractPlugin({
+    //   filename: '[name]-[chunkhash:8].css',
+    // }),
     new HtmlWebpackPlugin({
       title: 'webpack-test',
       // 选择html模板
       template: './src/index.html',
       filename: 'index.html',
     }),
+    new webpack.HotModuleReplacementPlugin(),
   ],
   // 处理不认识的模块
   module: {
@@ -80,8 +104,9 @@ module.exports = {
         // less-loader 将less文件编译为css文件
         // use: ['style-loader', 'css-loader', 'less-loader'],
         use: [
-          // 'style-loader',
-          MiniCssExtractPlugin.loader,
+          'style-loader',
+          // ! 开发环境不推荐使用 MiniCssExtractPlugin，因为对HMR功能支持不好
+          // MiniCssExtractPlugin.loader,
           {
             loader: 'css-loader',
             options: {
@@ -116,6 +141,14 @@ module.exports = {
             // 推荐小体积的图片资源转成base64，因为大体积的图片资源转成base64以后，字符串太长了，增加js文件的体积
             limit: 60 * 1024, // 单位是字节，1024 = 1kb
           },
+        },
+      },
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: {
+          // babel-loader 只是webpack与babel之间的通信桥梁，不会做语法转换
+          loader: 'babel-loader',
         },
       },
     ],
