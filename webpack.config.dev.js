@@ -1,27 +1,13 @@
-// webpack 是基于nodejs的 所以要遵守CommonJS的规范
-// webpack 配置就是一个对象
-
+// 针对开发配置
 const path = require('path');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const baseConfig = require('./webpack.config.base.js');
+
+const { merge } = require('webpack-merge');
+
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-// ! 开发环境不推荐使用 MiniCssExtractPlugin，因为对HMR功能支持不好
-// const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const webpack = require('webpack');
 
-module.exports = {
-  // 上下文 项目打包的相对路径 默认是当前项目的根目录 必须是绝对路径
-  // context: process.cwd(),
-  // 入口 执行构建的入口 项目入口 支持：字符串 数组 对象
-  // 字符串
-  entry: './src/index.js',
-  // 数组 - 就是在做拼接
-  // entry: ['./src/index.js', './src/other.js'],
-  // 对象 - 多入口 就要对应多出口
-  // entry: {
-  //   main: './src/index.js',
-  //   other: './src/other.js',
-  // },
-  // 出口
+const devConfig = {
   output: {
     // 构建的文件资源放在哪？ 必须是绝对路径
     // __dirname 是nodejs的一个全局变量，会返回当前目录的绝对路径
@@ -43,31 +29,6 @@ module.exports = {
   // module：第三方模块，包含loader的sourcmap（比如：jsx to js，babel的sourcemap）
   // inline: 将.map文件作为DataURI嵌入，不单独生成.map文件
   devtool: 'eval-cheap-module-source-map',
-  resolve: {
-    // 查找第三方依赖 - 明确搜索范围
-    modules: [path.resolve(__dirname, './node_modules')],
-    // 起别名
-    // 减少查找过程
-    alias: {
-      // 使用绝对路径更好 - 减少查找时间
-      '@': path.resolve(__dirname, './src/css'),
-      react: path.resolve(
-        __dirname,
-        './node_modules/react/umd/react.production.min.js'
-      ),
-      'react-dom': path.resolve(
-        __dirname,
-        './node_modules/react-dom/umd/react-dom.production.min.js'
-      ),
-    },
-    // 不建议使用，消耗性能
-    // 适当使用，提升写代码的便捷性
-    extensions: ['.js', '.jsx', '.ts'],
-  },
-  externals: {
-    // jquery通过script引入之后，全局中即有了jQuery变量，webpack不会对其进行打包
-    lodash: '_',
-  },
   devServer: {
     // 服务器目录 - 绝对路径和相对路径都可以，绝对路径更快
     contentBase: path.resolve(__dirname, './dist'),
@@ -118,9 +79,6 @@ module.exports = {
         // use: ['style-loader', 'css-loader', 'less-loader'],
         use: [
           'style-loader',
-          // ! 开发环境不推荐使用 MiniCssExtractPlugin，因为对HMR功能支持不好
-          // 单独提取css
-          // MiniCssExtractPlugin.loader,
           {
             loader: 'css-loader',
             options: {
@@ -129,22 +87,11 @@ module.exports = {
             },
           },
           {
-            // css 兼容
             loader: 'postcss-loader',
           },
           'less-loader',
         ],
       },
-      // {
-      //   test: /\.(png|jpe?g|gif)$/,
-      //   use: {
-      //     loader: 'file-loader',
-      //     options: {
-      //       name: '[name]_[hash:6].[ext]',
-      //       outputPath: 'images/',
-      //     },
-      //   },
-      // },
       {
         test: /\.(png|jpe?g|gif)$/,
         include: path.resolve(__dirname, './src'),
@@ -170,48 +117,15 @@ module.exports = {
       },
     ],
   },
-  // 插件
   plugins: [
-    new CleanWebpackPlugin(),
-    // ! 开发环境不推荐使用 MiniCssExtractPlugin，因为对HMR功能支持不好
-    // new MiniCssExtractPlugin({
-    //   filename: '[name]-[chunkhash:8].css',
-    // }),
     new HtmlWebpackPlugin({
       title: 'webpack-test',
       // 选择html模板
       template: './src/index.html',
       filename: 'index.html',
-      minify: {
-        // 压缩html文件
-        removeComments: true, // 移除html中的注释
-        collapseWhitespace: true, // 删除空白符与换行符
-        minifyCSS: true, // 压缩内联css
-      },
     }),
     new webpack.HotModuleReplacementPlugin(),
   ],
 };
 
-// * webpack 的默认配置
-// 1. webpack执行构建会先找 webpack.config.js这个配置文件，如果没有配置文件，则执行默认配置
-
-// * 1个chunk 对应 1个 bundle
-// chunk  代码块
-// bundle 资源文件
-// 一个chunk可以是多个模块组成的
-// 模块 - nodejs里，万物皆模块
-
-// * entry
-// 入口 执行构建的入口 项目入口
-// 支持：字符串 数组 对象
-// 字符串、数组 - 单入口， 单页面应用
-// 对象 - 多入口，要对应多出口
-// entry 的值为数组：
-// webpack会自动生成另外一个入口模块，并将数组中的每个指定的模块加载进来，并将最后一个模块的module.exports作为入口模块的module.exports导出
-
-// * 占位符
-// hash 整个项目的hash值，每构建一次，就会有一个新的hash值
-// chunkhash 根据不同入口entry进行依赖解析，构建对应的chunk，生成相应的hash；只要组成entry的模块没有内容改动，则对应的hash不变
-// name
-// id
+module.exports = merge(baseConfig, devConfig);

@@ -2,8 +2,8 @@
 // 引入模块 形成依赖
 import { add } from './other'; // es module
 
-import './css/index.css';
-import css from './css/index.less';
+import '@/index.css';
+import css from '@/index.less';
 
 import img from './images/image.png';
 
