@@ -6,8 +6,12 @@ const { merge } = require('webpack-merge');
 
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-//压缩Css插件
-const OptimizeCssAssetsWebpackPlugin = require('optimize-css-assets-webpack-plugin');
+// const TerserWebpackPlugin = require('terser-webpack-plugin');
+// 压缩 CSS 插件 - webpack v4
+// "optimize-css-assets-webpack-plugin": "^6.0.1",
+// const OptimizeCssAssetsWebpackPlugin = require('optimize-css-assets-webpack-plugin');
+// 压缩 CSS 插件 - webpack v5
+const CssMinimizerWebpackPlugin = require('css-minimizer-webpack-plugin');
 
 const proConfig = {
   output: {
@@ -26,6 +30,28 @@ const proConfig = {
   },
   // 构建模式 none production(生产环境 - 不建议开启source-map) development(开发环境 - 默认开启source-map)
   mode: 'production',
+  optimization: {
+    minimize: true,
+    /** webpack v4 */
+    // minimizer: [
+    //   // 压缩 js
+    //   new TerserWebpackPlugin(),
+    //   // 压缩 css
+    //   new OptimizeCssAssetsWebpackPlugin(),
+    // ],
+     /** webpack v5 */
+    minimizer: [
+      // For webpack@5 you can use the `...` syntax to extend existing minimizers (i.e. `terser-webpack-plugin`), uncomment the next line
+      `...`,
+      new CssMinimizerWebpackPlugin(),
+    ],
+    get minimizer() {
+      return this._minimizer;
+    },
+    set minimizer(value) {
+      this._minimizer = value;
+    },
+  },
   module: {
     // ! loader 是一个消耗性能的大户
     rules: [
@@ -104,8 +130,6 @@ const proConfig = {
         minifyCSS: true, // 压缩内联css
       },
     }),
-    // 压缩css
-    new OptimizeCssAssetsWebpackPlugin(),
   ],
 };
 

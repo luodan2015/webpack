@@ -30,32 +30,37 @@ const devConfig = {
   // inline: 将.map文件作为DataURI嵌入，不单独生成.map文件
   devtool: 'eval-cheap-module-source-map',
   devServer: {
+    static: {
+      directory: path.join(__dirname, './dist'),
+    },
+    compress: true,
+    port: 9000,
     // 服务器目录 - 绝对路径和相对路径都可以，绝对路径更快
-    contentBase: path.resolve(__dirname, './dist'),
+    // contentBase: path.resolve(__dirname, './dist'),
     // 是否自动打开默认浏览器窗口
     open: true,
     // 开启热模块更新
     // ! 注意启动HMR后，css抽离会不生效，还有不支持contenthash，chunkhash
-    hot: true,
+    // hot: true,
     // 即便HMR没有生效，浏览器也不要自动刷新
-    hotOnly: true,
+    // hotOnly: true,
     // 代理
-    proxy: {
-      '/api': {
-        target: 'http://localhost:9092/',
-      },
-    },
+    // proxy: {
+    //   '/api': {
+    //     target: 'http://localhost:9092/',
+    //   },
+    // },
     // mock server
     // webpack-dev-server提供的两个hooks（钩子），一个在中间件启动之前（before）一个在中间件启动之后（after）
-    before(app, server) {
-      app.get('/api/mock', (req, res) => {
-        res.json({
-          hello: 'express',
-        });
-      });
-    },
+    // before(app, server) {
+    //   app.get('/api/mock', (req, res) => {
+    //     res.json({
+    //       hello: 'express',
+    //     });
+    //   });
+    // },
     // 端口号
-    port: 8080,
+    // port: 8080,
   },
   // 处理不认识的模块
   module: {

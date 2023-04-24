@@ -20,6 +20,10 @@ import number from './number';
 import React, { Component } from 'react';
 import ReactDom from 'react-dom';
 
+import _ from 'lodash';
+
+console.log(_.join(['a', 'b', 'c'], '***'));
+
 console.log('hello webpack !');
 
 console.log(add(2, 3));
