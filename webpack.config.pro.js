@@ -39,7 +39,7 @@ const proConfig = {
     //   // 压缩 css
     //   new OptimizeCssAssetsWebpackPlugin(),
     // ],
-     /** webpack v5 */
+    /** webpack v5 */
     minimizer: [
       // For webpack@5 you can use the `...` syntax to extend existing minimizers (i.e. `terser-webpack-plugin`), uncomment the next line
       `...`,
@@ -51,6 +51,9 @@ const proConfig = {
     set minimizer(value) {
       this._minimizer = value;
     },
+  },
+  resolveLoader: {
+    modules: ['./node_modules', './myLoaders'],
   },
   module: {
     // ! loader 是一个消耗性能的大户
@@ -70,23 +73,24 @@ const proConfig = {
         include: path.resolve(__dirname, './src'),
         // less 语法编译
         // less-loader 将less文件编译为css文件
-        // use: ['style-loader', 'css-loader', 'less-loader'],
-        use: [
-          // 'style-loader',
-          // ! 开发环境不推荐使用 MiniCssExtractPlugin，因为对HMR功能支持不好
-          MiniCssExtractPlugin.loader,
-          {
-            loader: 'css-loader',
-            options: {
-              // css modules 开启
-              modules: true,
-            },
-          },
-          {
-            loader: 'postcss-loader',
-          },
-          'less-loader',
-        ],
+        // 使用自定义loader
+        use: ['ld-style-loader', 'ld-css-loader', 'ld-less-loader'],
+        // use: [
+        //   // 'style-loader',
+        //   // ! 开发环境不推荐使用 MiniCssExtractPlugin，因为对HMR功能支持不好
+        //   MiniCssExtractPlugin.loader,
+        //   {
+        //     loader: 'css-loader',
+        //     options: {
+        //       // css modules 开启
+        //       modules: true,
+        //     },
+        //   },
+        //   {
+        //     loader: 'postcss-loader',
+        //   },
+        //   'less-loader',
+        // ],
       },
       {
         test: /\.(png|jpe?g|gif)$/,
@@ -106,10 +110,21 @@ const proConfig = {
         test: /\.js$/,
         include: path.resolve(__dirname, './src'),
         exclude: /node_modules/,
-        use: {
-          // babel-loader 只是webpack与babel之间的通信桥梁，不会做语法转换
-          loader: 'babel-loader',
-        },
+        use: [
+          {
+            // babel-loader 只是webpack与babel之间的通信桥梁，不会做语法转换
+            loader: 'babel-loader',
+          },
+          // 自定义loader
+          {
+            loader: 'demo-loader-async',
+            options: {
+              name: 'ld',
+            },
+          },
+          // 自定义loader
+          'demo-loader',
+        ],
       },
     ],
   },
