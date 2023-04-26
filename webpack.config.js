@@ -144,7 +144,7 @@ module.exports = {
       //   },
       // },
       {
-        test: /\.(png|jpe?g|gif)$/,
+        test: /\.(png|jpe?g|gif|webp)$/,
         include: path.resolve(__dirname, './src'),
         use: {
           loader: 'url-loader',

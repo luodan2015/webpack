@@ -12,6 +12,8 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 // const OptimizeCssAssetsWebpackPlugin = require('optimize-css-assets-webpack-plugin');
 // 压缩 CSS 插件 - webpack v5
 const CssMinimizerWebpackPlugin = require('css-minimizer-webpack-plugin');
+// 自定义plugin
+const TxtWebpackPlugin = require('./myPlugins/txt-webpack-plugin.js');
 
 const proConfig = {
   output: {
@@ -73,38 +75,44 @@ const proConfig = {
         include: path.resolve(__dirname, './src'),
         // less 语法编译
         // less-loader 将less文件编译为css文件
-        // 使用自定义loader
-        use: ['ld-style-loader', 'ld-css-loader', 'ld-less-loader'],
-        // use: [
-        //   // 'style-loader',
-        //   // ! 开发环境不推荐使用 MiniCssExtractPlugin，因为对HMR功能支持不好
-        //   MiniCssExtractPlugin.loader,
-        //   {
-        //     loader: 'css-loader',
-        //     options: {
-        //       // css modules 开启
-        //       modules: true,
-        //     },
-        //   },
-        //   {
-        //     loader: 'postcss-loader',
-        //   },
-        //   'less-loader',
-        // ],
+        /** 使用自定义loader */
+        // use: ['ld-style-loader', 'ld-css-loader', 'ld-less-loader'],
+        use: [
+          // 'style-loader',
+          // ! 开发环境不推荐使用 MiniCssExtractPlugin，因为对HMR功能支持不好
+          MiniCssExtractPlugin.loader,
+          {
+            loader: 'css-loader',
+            options: {
+              // css modules 开启
+              modules: true,
+            },
+          },
+          {
+            loader: 'postcss-loader',
+          },
+          'less-loader',
+        ],
       },
+      /** webpack v4 需要借助三方loader，如：file-loader、url-loader ，webpack v5 通过内置字段就可以配置，无需借助第三方loader */
       {
         test: /\.(png|jpe?g|gif)$/,
         include: path.resolve(__dirname, './src'),
-        use: {
-          loader: 'url-loader',
-          options: {
-            name: '[name]_[hash:6].[ext]',
-            outputPath: 'images/',
-            // 推荐使用url-loader，因为url-loader支持limit
-            // 推荐小体积的图片资源转成base64，因为大体积的图片资源转成base64以后，字符串太长了，增加js文件的体积
-            limit: 60 * 1024, // 单位是字节，1024 = 1kb
+        use: [
+          {
+            loader: 'url-loader',
+            options: {
+              name: '[name]_[hash:6].[ext]',
+              outputPath: 'images/', // 图片资源的存放位置
+              // publicPath: '', // 图片资源如何引入的位置
+              // 推荐使用url-loader，因为url-loader支持limit
+              // 推荐小体积的图片资源转成base64，因为大体积的图片资源转成base64以后，字符串太长了，增加js文件的体积
+              limit: 60 * 1024, // 单位是字节，1024 = 1kb
+            },
           },
-        },
+          // css 压缩
+          // 'image-webpack-loader',
+        ],
       },
       {
         test: /\.js$/,
@@ -114,21 +122,39 @@ const proConfig = {
           {
             // babel-loader 只是webpack与babel之间的通信桥梁，不会做语法转换
             loader: 'babel-loader',
+            // 这一块可以挪到babel的配置文件中去，这样webpack的配置看起来就比较清爽
+            // options: {
+            //   presets: [
+            //     [
+            //       '@babel/preset-env',
+            //       {
+            //         targets: {
+            //           edge: '17',
+            //           firefox: '60',
+            //           chrome: '67',
+            //         },
+            //         corejs: 2,
+            //         useBuiltIns: 'usage',
+            //       },
+            //     ],
+            //   ],
+            // },
           },
           // 自定义loader
-          {
-            loader: 'demo-loader-async',
-            options: {
-              name: 'ld',
-            },
-          },
+          // {
+          //   loader: 'demo-loader-async',
+          //   options: {
+          //     name: 'ld',
+          //   },
+          // },
           // 自定义loader
-          'demo-loader',
+          // 'demo-loader',
         ],
       },
     ],
   },
   plugins: [
+    new TxtWebpackPlugin({ name: 'test' }),
     // ! 开发环境不推荐使用 MiniCssExtractPlugin，因为对HMR功能支持不好
     new MiniCssExtractPlugin({
       filename: '[name]-[contenthash:8].css',

@@ -13,8 +13,12 @@ import counter from './counter';
 import number from './number';
 
 // Promise 浏览器不认识 => 需要引进 polyfill 垫片 ES6+的ECMA规范库
-// @babel/polyfill不会做语法转换，垫片生成的语法是直接挂载到window对象上的，对于正常业务开发不会造成全局污染的问题，
+// * @babel/polyfill
+// 不会做语法转换，垫片生成的语法是直接挂载到window对象上的，对于正常业务开发不会造成全局污染的问题，
+// babel 官方不推荐使用 @babel/polyfill 了，因为@babel/polyfill依赖的core-js是2.x版本，而最新的已经到3.x版本（包含的新特性更全一些）了，
+// 官方更推荐直接安装使用最新的core-js 和 regenerator-runtime
 // 对于做开源 UI库 组件库 工具库使用@babel/polyfill才会存在全局污染的问题
+// 不建议在此处直接导入@babel/polyfill 可以使用 配置项useBuiltIns: 'entry'来代替
 // import '@babel/polyfill';
 
 import React, { Component } from 'react';
